@@ -13,9 +13,18 @@ These instructions allow you to zero the stock list and complete a stock take.
 * Download the JAR from the releases page (or compile it yourself)
 * Open a command prompt or terminal and run `java -jar easihht.jar ProductData.csv --zero` (assuming both the jar and the `ProductData.csv` file are in your working directory).
 * Connect a barcode scanner, and you're good to go!
-* Once finished, type "q" to quit the app, and you should have a `stock.csv` file which you can import*.
-
-(*Note: I still haven't tested importing back to a till, so I don't have clear instructions as of how to do it yet. I will update this page when I know how to do this.)
+* Once finished, type "q" to quit the app, and you should have a `stock.csv` file.
+* Transfer this file to the master till and open Easitill Supervisor.
+* Make a system backup if you haven't already by going to Tools -> Backup System Data.
+* Go to Data -> Stock Data Import and press Yes confirming you've done a backup.
+* Select the `stock.csv` file.
+* Press the Setup button in the bottom middle. 
+* Select column 1, set it to "Linecode" and check "Key Field". Press OK.
+* Select column 2, set it to "Stock Quantity" and check "Update Field". Press OK.
+* Press Cancel to exit the setup.
+* At the bottom left, deselect "Add Record If Does Not Exist", select "Update Record If Exists". Deselect "Prompt Before Write" if you're doing a large-scale stock take and do not want to check each item.
+* Press Import. If you kept "Prompt Before Write" activated, you will be asked to accept or reject the changes.
+* Stock take done!
 
 ## Command Line Options
 ```

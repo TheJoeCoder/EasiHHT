@@ -43,11 +43,11 @@ public class StockTake {
     }
 
     public static void exportStock(File outFile) throws IOException {
-        StringBuilder fileExportString = new StringBuilder("Linecode,StockQuantity");
+        StringBuilder fileExportString = new StringBuilder("");
         for(Product product : productStockMap.keySet()) {
             int linecode = product.linecode;
             int stock = productStockMap.get(product);
-            fileExportString.append("\n").append(linecode).append(",").append(stock);
+            fileExportString.append(linecode).append(",").append(stock).append("\n");
         }
         FileWriter writer = new FileWriter(outFile);
         writer.write(fileExportString.toString());
