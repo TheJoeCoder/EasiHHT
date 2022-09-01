@@ -1,6 +1,8 @@
 package uk.radialbog9.easitill.easihht;
 
 import com.opencsv.bean.CsvBindByName;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 
 /**
  * A minimal implementation of a product on Easitill. <br>
@@ -13,10 +15,6 @@ public class Product {
     public String plu;
     @CsvBindByName(column = "Description", required = true)
     public String description;
-    @CsvBindByName(column = "InternetText1")
-    public String internetText;
-    @CsvBindByName(column = "GrossSalePrice")
-    public float cost;
-    @CsvBindByName(column = "GroupDescription")
-    public String category;
+    @CsvBindByName(column = "StockQuantity")
+    public float originalStock;
 }
