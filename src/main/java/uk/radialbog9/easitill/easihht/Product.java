@@ -1,8 +1,6 @@
 package uk.radialbog9.easitill.easihht;
 
 import com.opencsv.bean.CsvBindByName;
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 /**
  * A minimal implementation of a product on Easitill. <br>
