@@ -43,7 +43,7 @@ public class StockTake {
     }
 
     public static void exportStock(File outFile) throws IOException {
-        StringBuilder fileExportString = new StringBuilder("");
+        StringBuilder fileExportString = new StringBuilder();
         for(Product product : productStockMap.keySet()) {
             int linecode = product.linecode;
             int stock = productStockMap.get(product);
@@ -140,7 +140,7 @@ public class StockTake {
                     } else {
                         System.out.println("PLU doesn't exist. Did you mean to search?");
                     }
-                } else if (step == 1) {
+                } else {
                     int val = -1;
                     try {
                         val = Integer.parseInt(line);
@@ -156,10 +156,6 @@ public class StockTake {
                     }
                     currentProduct = null;
                     step = 0;
-                } else {
-                    System.err.println("Something's gone very wrong! Resetting...");
-                    step = 0;
-                    currentProduct = null;
                 }
             }
         } catch (IllegalStateException | NoSuchElementException e) {
