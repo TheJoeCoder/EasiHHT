@@ -1,10 +1,10 @@
 package uk.radialbog9.easitill.easihht;
 
-import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 
 public class StockTakeImportProduct {
-    @CsvBindByName(column = "Linecode")
+    @CsvBindByPosition(position = 0)
     public int linecode;
-    @CsvBindByName(column = "StockQuantity")
+    @CsvBindByPosition(position = 1)
     public float stock;
 }
