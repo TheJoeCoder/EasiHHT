@@ -8,7 +8,7 @@ I made this because Hand-Held Terminals are expensive, both to rent and to buy o
 So, we all have a phone or laptop lying around, why not use it?
 
 ## How to
-These instructions allow you to zero the stock list and complete a stock take. Please note this app requires Java to be installed.
+These instructions allow you to zero the stock list and complete a stock take. Please note this app requires Java to be installed on your device.
 ### Preparation
 * Export the `ProductData.csv` file from the master till. This can be done by going to Tools -> Export Internet Data in the Easitill client/supervisor. Be sure to deselect "Ecommerce items only" and to set File Format to CSV.
 * Move the `ProductData.csv` file to a folder on the device you are running the stock take on.

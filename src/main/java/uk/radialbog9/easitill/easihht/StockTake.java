@@ -17,13 +17,15 @@ public class StockTake {
     private static HashMap<String, Product> descProductCache = new HashMap<>();
     private static HashMap<Integer, Product> linecodeProductCache = new HashMap<Integer, Product>();
 
+    private static String lineEndings = "\n";
+
     public static void importProducts(File productFile, boolean zeroStock) throws Exception {
         // Import product data file
         List<Product> productList = new CsvToBeanBuilder(new FileReader(productFile))
                 .withType(Product.class).build().parse();
         for(Product product : productList) {
             productStockMap.put(product, zeroStock ? 0 : Math.round(product.originalStock));
-            pluProductCache.put(product.plu, product);
+            if(product.plu != null) pluProductCache.put(product.plu, product);
             descProductCache.put(product.description, product);
             linecodeProductCache.put(product.linecode, product);
         }
@@ -47,7 +49,7 @@ public class StockTake {
         for(Product product : productStockMap.keySet()) {
             int linecode = product.linecode;
             int stock = productStockMap.get(product);
-            fileExportString.append(linecode).append(",").append(stock).append("\n");
+            fileExportString.append(linecode).append(",").append(stock).append(lineEndings);
         }
         FileWriter writer = new FileWriter(outFile);
         writer.write(fileExportString.toString());
@@ -69,6 +71,11 @@ public class StockTake {
                 .setLongFlag("zero");
         sw1.setHelp("Zero stock after importing");
         jsap.registerParameter(sw1);
+
+        Switch sw2 = new Switch("winlineend")
+                .setShortFlag('w')
+                .setLongFlag("windows");
+        sw2.setHelp("Set line endings to Windows (\\r\\n) instead of Unix (\\n)");
 
         FlaggedOption opt2 = new FlaggedOption("resumetake")
                 .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
@@ -104,6 +111,8 @@ public class StockTake {
             System.exit(1);
         }
 
+        lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
+
         // Load product file
         importProducts(config.getFile("file"), config.getBoolean("zerostock"));
         if(config.getFile("resumetake") != null) importExistingStockTake(config.getFile("resumetake"));
@@ -119,7 +128,8 @@ public class StockTake {
             while (true) {
                 if (step == 0) System.out.println("Enter PLU or type q to exit");
                 if (step == 1) {
-                    System.out.println("-= Product " + currentProduct.linecode + " =-");
+                    System.out.println("\n\n");
+                    System.out.println("Linecode:");
                     System.out.println(currentProduct.description);
                     System.out.println("PLU:" + currentProduct.plu);
                     System.out.println("Current Stock Take Amount: " + productStockMap.get(currentProduct));
@@ -138,7 +148,7 @@ public class StockTake {
                         currentProduct = pluProductCache.get(line);
                         step = 1;
                     } else {
-                        System.out.println("PLU doesn't exist. Did you mean to search?");
+                        System.out.println("PLU doesn't exist.");
                     }
                 } else {
                     int val = -1;
