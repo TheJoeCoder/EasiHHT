@@ -142,7 +142,7 @@ public class StockTake {
                 if (step == 0) System.out.println("Enter PLU or type q to exit");
                 if (step == 1) {
                     System.out.println("\n\n");
-                    System.out.println("Linecode:");
+                    System.out.println("Linecode:" + currentProduct.linecode);
                     System.out.println(currentProduct.description);
                     System.out.println("PLU:" + currentProduct.plu);
                     System.out.println("Current Stock Take Amount: " + getStock(currentProduct));
