@@ -7,6 +7,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.*;
 import java.util.*;
 
+@SuppressWarnings({"rawtypes", "MismatchedQueryAndUpdateOfCollection"})
 public class StockTake {
     private static final HashMap<Product, Integer> existingProdStockMap = new HashMap<>();
     private static final HashMap<Product, Integer> productStockMap = new HashMap<>();
