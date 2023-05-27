@@ -18,12 +18,13 @@ public class StockTake {
 
     private static String lineEndings = "\n";
 
-    public static void importProducts(File productFile, boolean zeroStock) throws Exception {
+    public static void importProducts(File productFile, boolean zeroStock, boolean insertAllExport) throws Exception {
         // Import product data file
         List<Product> productList = new CsvToBeanBuilder<Product>(new FileReader(productFile))
                 .withType(Product.class).build().parse();
         for(Product product : productList) {
             existingProdStockMap.put(product, Math.round(product.originalStock));
+            if(insertAllExport) setStock(product, Math.round(product.originalStock));
             if(zeroStock) setStock(product, 0);
             if(product.plu != null) pluProductCache.put(product.plu, product);
             descProductCache.put(product.description, product);
@@ -86,6 +87,13 @@ public class StockTake {
                 .setShortFlag('w')
                 .setLongFlag("windows");
         sw2.setHelp("Set line endings to Windows (\\r\\n) instead of Unix (\\n)");
+        jsap.registerParameter(sw2);
+
+        Switch sw3 = new Switch("exportall")
+                .setShortFlag('a')
+                .setLongFlag("exportall");
+        sw3.setHelp("Sends all products to output CSV, even if not modified");
+        jsap.registerParameter(sw3);
 
         FlaggedOption opt2 = new FlaggedOption("resumetake")
                 .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
@@ -121,10 +129,10 @@ public class StockTake {
             System.exit(1);
         }
 
-        lineEndings = config.getBoolean("winlineend", false) ? "\r\n" : "\n";
+        lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
 
         // Load product file
-        importProducts(config.getFile("file"), config.getBoolean("zerostock"));
+        importProducts(config.getFile("file"), config.getBoolean("zerostock"), config.getBoolean("exportall"));
         if(config.getFile("resumetake") != null) importExistingStockTake(config.getFile("resumetake"));
 
         // Wait for input
