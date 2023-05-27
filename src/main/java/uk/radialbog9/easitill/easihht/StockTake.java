@@ -49,7 +49,7 @@ public class StockTake {
                 setStock(linecodeProductCache.get(stProd.linecode), Math.round(stProd.stock));
             } else {
                 //doesn't exist
-                System.err.println("Product " + stProd.linecode + " in previous stock take file doesn't exist in product data file.");
+                System.err.println(ANSICol.RED + "Product " + stProd.linecode + " in previous stock take file doesn't exist in product data file." + ANSICol.RESET);
             }
         }
     }
@@ -137,14 +137,13 @@ public class StockTake {
         try {
             while (true) {
                 // Output to start each step
-                if (step == 0) System.out.println("Enter PLU or type q to exit");
+                if (step == 0) System.out.println(ANSICol.CYAN + "Enter PLU or type q to exit" + ANSICol.RESET);
                 if (step == 1) {
-                    System.out.println("\n\n");
-                    System.out.println("Linecode:" + currentProduct.linecode);
+                    System.out.println(ANSICol.GREEN + "Linecode:" + currentProduct.linecode);
                     System.out.println(currentProduct.description);
                     System.out.println("PLU:" + currentProduct.plu);
                     System.out.println("Current Stock Take Amount: " + getStock(currentProduct));
-                    System.out.println("Enter new stock or press enter to go back");
+                    System.out.println(ANSICol.CYAN + "Enter new stock or press enter to go back" + ANSICol.RESET);
                 }
 
                 // Input processing
@@ -161,7 +160,7 @@ public class StockTake {
                         currentProduct = pluProductCache.get(line);
                         step = 1;
                     } else {
-                        System.out.println("PLU doesn't exist.");
+                        System.out.println(ANSICol.RED + "PLU doesn't exist.");
                     }
                 } else {
                     int val = -1;
@@ -171,10 +170,10 @@ public class StockTake {
                     if (val >= 0) {
                         // Stock change
                         setStock(currentProduct, val);
-                        System.out.println("Stock updated to " + val);
+                        System.out.println(ANSICol.CYAN + "Stock updated to " + val + ANSICol.RESET);
                     } else {
                         // Return
-                        System.out.println("Stock not updated");
+                        System.out.println(ANSICol.RED + "Stock not updated" + ANSICol.RESET);
                     }
                     currentProduct = null;
                     step = 0;

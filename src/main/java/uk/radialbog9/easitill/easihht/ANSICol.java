@@ -22,5 +22,5 @@ public enum ANSICol {
 
     private final String colCode;
     ANSICol(String colCode) { this.colCode = colCode; }
-    public String getValue() { return this.colCode; }
+    public String toString() { return this.colCode; }
 }
