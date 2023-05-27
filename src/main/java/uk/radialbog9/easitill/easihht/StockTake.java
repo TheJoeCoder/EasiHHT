@@ -5,24 +5,21 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 import com.opencsv.bean.CsvToBeanBuilder;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 
 public class StockTake {
-    private static HashMap<Product, Integer> existingProdStockMap = new HashMap<>();
-    private static HashMap<Product, Integer> productStockMap = new HashMap<>();
+    private static final HashMap<Product, Integer> existingProdStockMap = new HashMap<>();
+    private static final HashMap<Product, Integer> productStockMap = new HashMap<>();
 
-    private static HashMap<String, Product> pluProductCache = new HashMap<>();
-    private static HashMap<String, Product> descProductCache = new HashMap<>();
-    private static HashMap<Integer, Product> linecodeProductCache = new HashMap<Integer, Product>();
+    private static final HashMap<String, Product> pluProductCache = new HashMap<>();
+    private static final HashMap<String, Product> descProductCache = new HashMap<>();
+    private static final HashMap<Integer, Product> linecodeProductCache = new HashMap<>();
 
     private static String lineEndings = "\n";
 
     public static void importProducts(File productFile, boolean zeroStock) throws Exception {
         // Import product data file
-        List<Product> productList = new CsvToBeanBuilder(new FileReader(productFile))
+        List<Product> productList = new CsvToBeanBuilder<Product>(new FileReader(productFile))
                 .withType(Product.class).build().parse();
         for(Product product : productList) {
             existingProdStockMap.put(product, Math.round(product.originalStock));
@@ -44,7 +41,7 @@ public class StockTake {
     }
 
     public static void importExistingStockTake(File file) throws Exception {
-        List<StockTakeImportProduct> stockTakeImportProductList = new CsvToBeanBuilder(new FileReader(file))
+        List<StockTakeImportProduct> stockTakeImportProductList = new CsvToBeanBuilder<StockTakeImportProduct>(new FileReader(file))
                 .withType(StockTakeImportProduct.class).build().parse();
         for(StockTakeImportProduct stProd : stockTakeImportProductList) {
             if(linecodeProductCache.containsKey(stProd.linecode)) {
