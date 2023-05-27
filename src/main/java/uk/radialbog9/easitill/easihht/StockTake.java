@@ -11,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class StockTake {
+    private static HashMap<Product, Integer> existingProdStockMap = new HashMap<>();
     private static HashMap<Product, Integer> productStockMap = new HashMap<>();
 
     private static HashMap<String, Product> pluProductCache = new HashMap<>();
@@ -24,11 +25,22 @@ public class StockTake {
         List<Product> productList = new CsvToBeanBuilder(new FileReader(productFile))
                 .withType(Product.class).build().parse();
         for(Product product : productList) {
-            productStockMap.put(product, zeroStock ? 0 : Math.round(product.originalStock));
+            existingProdStockMap.put(product, Math.round(product.originalStock));
+            if(zeroStock) setStock(product, 0);
             if(product.plu != null) pluProductCache.put(product.plu, product);
             descProductCache.put(product.description, product);
             linecodeProductCache.put(product.linecode, product);
         }
+    }
+
+    public static void setStock(Product product, int stock) {
+        productStockMap.put(product, stock);
+    }
+
+    public static int getStock(Product product) {
+        if (productStockMap.containsKey(product)) {
+            return productStockMap.get(product);
+        } else return existingProdStockMap.getOrDefault(product, 0);
     }
 
     public static void importExistingStockTake(File file) throws Exception {
@@ -36,7 +48,7 @@ public class StockTake {
                 .withType(StockTakeImportProduct.class).build().parse();
         for(StockTakeImportProduct stProd : stockTakeImportProductList) {
             if(linecodeProductCache.containsKey(stProd.linecode)) {
-                productStockMap.put(linecodeProductCache.get(stProd.linecode), Math.round(stProd.stock));
+                setStock(linecodeProductCache.get(stProd.linecode), Math.round(stProd.stock));
             } else {
                 //doesn't exist
                 System.err.println("Product " + stProd.linecode + " in previous stock take file doesn't exist in product data file.");
@@ -111,7 +123,7 @@ public class StockTake {
             System.exit(1);
         }
 
-        lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
+        lineEndings = config.getBoolean("winlineend", false) ? "\r\n" : "\n";
 
         // Load product file
         importProducts(config.getFile("file"), config.getBoolean("zerostock"));
@@ -126,15 +138,18 @@ public class StockTake {
         Product currentProduct = null;
         try {
             while (true) {
+                // Output to start each step
                 if (step == 0) System.out.println("Enter PLU or type q to exit");
                 if (step == 1) {
                     System.out.println("\n\n");
                     System.out.println("Linecode:");
                     System.out.println(currentProduct.description);
                     System.out.println("PLU:" + currentProduct.plu);
-                    System.out.println("Current Stock Take Amount: " + productStockMap.get(currentProduct));
+                    System.out.println("Current Stock Take Amount: " + getStock(currentProduct));
                     System.out.println("Enter new stock or press enter to go back");
                 }
+
+                // Input processing
                 System.out.print("> ");
                 String line = scanner.nextLine();
                 if (line.equalsIgnoreCase("q")) {
@@ -142,7 +157,7 @@ public class StockTake {
                     System.out.println("Saving and exiting...");
                     exportStock(config.getFile("outputfile", new File("stock.csv")));
                     System.exit(0);
-                } else if (step == 0) {
+                } /* Input Steps */ else if (step == 0) {
                     // Select by PLU
                     if (pluProductCache.containsKey(line)) {
                         currentProduct = pluProductCache.get(line);
@@ -154,11 +169,10 @@ public class StockTake {
                     int val = -1;
                     try {
                         val = Integer.parseInt(line);
-                    } catch (NumberFormatException ignored) {
-                    }
+                    } catch (NumberFormatException ignored) {}
                     if (val >= 0) {
                         // Stock change
-                        productStockMap.put(currentProduct, val);
+                        setStock(currentProduct, val);
                         System.out.println("Stock updated to " + val);
                     } else {
                         // Return
@@ -171,6 +185,7 @@ public class StockTake {
         } catch (IllegalStateException | NoSuchElementException e) {
             // System.in has been closed
             System.out.println("Forcibly exiting...");
+            System.exit(1);
         }
     }
 }
