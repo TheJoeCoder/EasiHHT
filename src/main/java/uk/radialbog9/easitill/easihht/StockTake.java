@@ -155,6 +155,18 @@ public class StockTake {
                     System.out.println(ANSICol.CYAN + "Enter new stock or press enter to go back" + ANSICol.RESET);
                 }
                 if (step == 2) {
+                    if(searchResults.isEmpty()) {
+                        // Skip search if no results
+                        System.out.println(ANSICol.RED + "No results found!" + ANSICol.RESET);
+                        step = 0;
+                        continue;
+                    }
+                    if(searchResults.size() == 1) {
+                        // Skip search if only one result
+                        currentProduct = searchResults.get(0);
+                        step = 1;
+                        continue;
+                    }
                     System.out.println(ANSICol.CYAN + "Search results:" + ANSICol.RESET);
                     for (int i = 0; i < searchResults.size(); i++) {
                         Product product = searchResults.get(i);
