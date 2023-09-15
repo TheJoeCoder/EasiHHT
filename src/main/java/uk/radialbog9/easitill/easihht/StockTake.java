@@ -142,16 +142,30 @@ public class StockTake {
         // 1: Enter stock
         int step = 0;
         Product currentProduct = null;
+        List<Product> searchResults = new ArrayList<>();
         try {
             while (true) {
                 // Output to start each step
-                if (step == 0) System.out.println(ANSICol.CYAN + "Enter PLU or type q to exit" + ANSICol.RESET);
+                if (step == 0) System.out.println(ANSICol.CYAN + "Enter PLU, search with ?<query> or type q to exit" + ANSICol.RESET);
                 if (step == 1) {
                     System.out.println(ANSICol.GREEN + "Linecode:" + currentProduct.linecode);
                     System.out.println(currentProduct.description);
                     System.out.println("PLU:" + currentProduct.plu);
                     System.out.println("Current Stock Take Amount: " + getStock(currentProduct));
                     System.out.println(ANSICol.CYAN + "Enter new stock or press enter to go back" + ANSICol.RESET);
+                }
+                if (step == 2) {
+                    System.out.println(ANSICol.CYAN + "Search results:" + ANSICol.RESET);
+                    for (int i = 0; i < searchResults.size(); i++) {
+                        Product product = searchResults.get(i);
+                        System.out.println(ANSICol.GREEN + "Linecode:" + product.linecode);
+                        System.out.println(product.description);
+                        System.out.println("PLU:" + product.plu);
+                        System.out.println("Current Stock Take Amount: " + getStock(product));
+                        System.out.println(ANSICol.CYAN + "Enter " + i + " to select" + ANSICol.RESET);
+                        System.out.println();
+                    }
+                    System.out.println(ANSICol.CYAN + "Enter item or press enter to go back" + ANSICol.RESET);
                 }
 
                 // Input processing
@@ -163,14 +177,26 @@ public class StockTake {
                     exportStock(config.getFile("outputfile", new File("stock.csv")));
                     System.exit(0);
                 } /* Input Steps */ else if (step == 0) {
-                    // Select by PLU
-                    if (pluProductCache.containsKey(line)) {
-                        currentProduct = pluProductCache.get(line);
-                        step = 1;
+                    if (line.startsWith("?")) {
+                        String query = line.substring(1);
+                        // Search
+                        searchResults.clear();
+                        for (String productDesc : descProductCache.keySet()) {
+                            if (productDesc.toLowerCase().contains(query.toLowerCase())) {
+                                searchResults.add(descProductCache.get(productDesc));
+                            }
+                        }
+                        step = 2;
                     } else {
-                        System.out.println(ANSICol.RED + "PLU doesn't exist.");
+                        // Select by PLU
+                        if (pluProductCache.containsKey(line)) {
+                            currentProduct = pluProductCache.get(line);
+                            step = 1;
+                        } else {
+                            System.out.println(ANSICol.RED + "PLU doesn't exist.");
+                        }
                     }
-                } else {
+                } else if (step == 1) {
                     int val = -1;
                     try {
                         val = Integer.parseInt(line);
@@ -185,6 +211,24 @@ public class StockTake {
                     }
                     currentProduct = null;
                     step = 0;
+                } else { // if (step == 2)
+                    if(line.isBlank()) {
+                        // Return
+                        System.out.println(ANSICol.RED + "Search cancelled" + ANSICol.RESET);
+                        step = 0;
+                    }
+                    int val = -1;
+                    try {
+                        val = Integer.parseInt(line);
+                    } catch (NumberFormatException ignored) {}
+                    if (val >= 0 && val < searchResults.size()) {
+                        // Select by search
+                        currentProduct = searchResults.get(val);
+                        step = 1;
+                    } else {
+                        // Invalid
+                        System.out.println(ANSICol.RED + "Invalid selection" + ANSICol.RESET);
+                    }
                 }
             }
         } catch (IllegalStateException | NoSuchElementException e) {
