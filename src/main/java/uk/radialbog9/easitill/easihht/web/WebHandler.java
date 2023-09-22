@@ -10,6 +10,7 @@ import org.eclipse.jetty.util.Fields;
 import uk.radialbog9.easitill.easihht.Product;
 import uk.radialbog9.easitill.easihht.StockTake;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class WebHandler extends Handler.Abstract {
     }
 
     @Override
-    public boolean handle(Request request, Response response, Callback callback) {
+    public boolean handle(Request request, Response response, Callback callback) throws IOException {
         response.setStatus(200);
         response.getHeaders().put(HttpHeader.CONTENT_TYPE, "application/json; charset=utf-8");
         String method = request.getMethod();
@@ -147,6 +148,13 @@ public class WebHandler extends Handler.Abstract {
                 response.setStatus(400);
                 Content.Sink.write(response, true, "{\"text\":\"bad request\"}", callback);
             }
+            return true;
+        }
+
+        if (path.equals("/api/saveandexit")) {
+            StockTake.exportStock(StockTake.getOutputFile());
+            Content.Sink.write(response, true, "{\"text\":\"saved\"}", callback);
+            System.exit(0);
             return true;
         }
 

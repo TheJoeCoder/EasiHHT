@@ -24,6 +24,9 @@ public class StockTake {
 
     private static String lineEndings = "\n";
 
+    @Getter
+    private static File outputFile;
+
     public static void importProducts(File productFile, boolean zeroStock, boolean insertAllExport) throws Exception {
         // Import product data file
         List<Product> productList = new CsvToBeanBuilder<Product>(new FileReader(productFile))
@@ -271,6 +274,8 @@ public class StockTake {
 
         lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
 
+        outputFile = config.getFile("outputfile", new File("stock.csv"));
+
         // Load product file
         importProducts(config.getFile("file"), config.getBoolean("zerostock"), config.getBoolean("exportall"));
         if(config.getFile("resumetake") != null) importExistingStockTake(config.getFile("resumetake"));
@@ -281,7 +286,7 @@ public class StockTake {
             WebServer.initiate(config.getInt("webport", 8080));
         } else {
             // Start graphical stock take
-            graphicalStockTake(config.getFile("outputfile", new File("stock.csv")));
+            graphicalStockTake(outputFile);
         }
     }
 }
