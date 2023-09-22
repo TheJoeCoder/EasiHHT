@@ -213,7 +213,7 @@ public class StockTake {
         Switch sw2 = new Switch("winlineend")
                 .setShortFlag('w')
                 .setLongFlag("windows");
-        sw2.setHelp("Set line endings to Windows (\\r\\n) instead of Unix (\\n)");
+        sw2.setHelp("Set line endings on exported files to Windows (\\r\\n) instead of Unix (\\n)");
         jsap.registerParameter(sw2);
 
         Switch sw3 = new Switch("exportall")
