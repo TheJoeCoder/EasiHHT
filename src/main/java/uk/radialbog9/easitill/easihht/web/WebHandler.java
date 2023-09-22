@@ -33,7 +33,7 @@ public class WebHandler extends Handler.Abstract {
     }
 
     @Override
-    public boolean handle(Request request, Response response, Callback callback) throws Exception {
+    public boolean handle(Request request, Response response, Callback callback) {
         response.setStatus(200);
         response.getHeaders().put(HttpHeader.CONTENT_TYPE, "application/json; charset=utf-8");
         String method = request.getMethod();
@@ -99,7 +99,7 @@ public class WebHandler extends Handler.Abstract {
             Fields queryParams = Request.extractQueryParameters(request);
             Fields.Field linecodeField = queryParams.get("linecode");
             if(linecodeField != null) {
-                int linecode = -1;
+                int linecode;
                 try {
                     linecode = Integer.parseInt(linecodeField.getValue());
                 } catch (NumberFormatException e) {
