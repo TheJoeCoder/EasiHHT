@@ -2,7 +2,10 @@ package uk.radialbog9.easitill.easihht;
 
 import com.martiansoftware.jsap.*;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
+import com.martiansoftware.jsap.stringparsers.IntegerStringParser;
 import com.opencsv.bean.CsvToBeanBuilder;
+import lombok.Getter;
+import uk.radialbog9.easitill.easihht.web.WebServer;
 
 import java.io.*;
 import java.util.*;
@@ -12,8 +15,11 @@ public class StockTake {
     private static final HashMap<Product, Integer> existingProdStockMap = new HashMap<>();
     private static final HashMap<Product, Integer> productStockMap = new HashMap<>();
 
+    @Getter
     private static final HashMap<String, Product> pluProductCache = new HashMap<>();
+    @Getter
     private static final HashMap<String, Product> descProductCache = new HashMap<>();
+    @Getter
     private static final HashMap<Integer, Product> linecodeProductCache = new HashMap<>();
 
     private static String lineEndings = "\n";
@@ -67,75 +73,8 @@ public class StockTake {
         writer.close();
     }
 
-    public static void main(String[] args) throws Exception {
-        // Parse arguments
-        JSAP jsap = new JSAP();
-
-        UnflaggedOption opt1 = new UnflaggedOption("file")
-                .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
-                .setRequired(true);
-        opt1.setHelp("ProductData.csv file to import");
-        jsap.registerParameter(opt1);
-
-        Switch sw1 = new Switch("zerostock")
-                .setShortFlag('z')
-                .setLongFlag("zero");
-        sw1.setHelp("Zero stock after importing");
-        jsap.registerParameter(sw1);
-
-        Switch sw2 = new Switch("winlineend")
-                .setShortFlag('w')
-                .setLongFlag("windows");
-        sw2.setHelp("Set line endings to Windows (\\r\\n) instead of Unix (\\n)");
-        jsap.registerParameter(sw2);
-
-        Switch sw3 = new Switch("exportall")
-                .setShortFlag('a')
-                .setLongFlag("exportall");
-        sw3.setHelp("Sends all products to output CSV, even if not modified");
-        jsap.registerParameter(sw3);
-
-        FlaggedOption opt2 = new FlaggedOption("resumetake")
-                .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
-                .setShortFlag('r')
-                .setLongFlag("resume");
-        opt2.setHelp("Continue stock take from specified stock.csv file (overrides -z)");
-        jsap.registerParameter(opt2);
-
-        FlaggedOption opt3 = new FlaggedOption("outputfile")
-                .setStringParser(FileStringParser.getParser().setMustExist(false).setMustBeFile(true))
-                .setShortFlag('o')
-                .setLongFlag("output");
-        opt3.setHelp("Set output file");
-        jsap.registerParameter(opt3);
-
-        JSAPResult config = jsap.parse(args);
-        if (!config.success()) {
-            System.err.println();
-            // print out specific error messages describing the problems
-            // with the command line, THEN print usage, THEN print full
-            // help.  This is called "beating the user with a clue stick."
-            for (java.util.Iterator errs = config.getErrorMessageIterator();
-                 errs.hasNext(); ) {
-                System.err.println("Error: " + errs.next());
-            }
-            System.err.println();
-            System.err.println("Usage: java -jar "
-                    + new File(StockTake.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getName());
-            System.err.println("                "
-                    + jsap.getUsage());
-            System.err.println();
-            System.err.println(jsap.getHelp());
-            System.exit(1);
-        }
-
-        lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
-
-        // Load product file
-        importProducts(config.getFile("file"), config.getBoolean("zerostock"), config.getBoolean("exportall"));
-        if(config.getFile("resumetake") != null) importExistingStockTake(config.getFile("resumetake"));
-
-        // Wait for input
+    private static void graphicalStockTake(File outFile) {
+// Wait for input
         Scanner scanner = new Scanner(System.in);
         // Steps:
         // 0: Product Select
@@ -186,8 +125,13 @@ public class StockTake {
                 if (line.equalsIgnoreCase("q")) {
                     // Quit
                     System.out.println("Saving and exiting...");
-                    exportStock(config.getFile("outputfile", new File("stock.csv")));
-                    System.exit(0);
+                    try {
+                        exportStock(outFile);
+                        System.exit(0);
+                    } catch (IOException e) {
+                        System.err.println(ANSICol.RED + "Failed to save stock file!" + ANSICol.RESET);
+                        System.exit(1);
+                    }
                 } /* Input Steps */ else if (step == 0) {
                     if (line.startsWith("?")) {
                         String query = line.substring(1);
@@ -247,6 +191,97 @@ public class StockTake {
             // System.in has been closed
             System.out.println("Forcibly exiting...");
             System.exit(1);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        // Parse arguments
+        JSAP jsap = new JSAP();
+
+        UnflaggedOption opt1 = new UnflaggedOption("file")
+                .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
+                .setRequired(true);
+        opt1.setHelp("ProductData.csv file to import");
+        jsap.registerParameter(opt1);
+
+        Switch sw1 = new Switch("zerostock")
+                .setShortFlag('z')
+                .setLongFlag("zero");
+        sw1.setHelp("Zero stock after importing");
+        jsap.registerParameter(sw1);
+
+        Switch sw2 = new Switch("winlineend")
+                .setShortFlag('w')
+                .setLongFlag("windows");
+        sw2.setHelp("Set line endings to Windows (\\r\\n) instead of Unix (\\n)");
+        jsap.registerParameter(sw2);
+
+        Switch sw3 = new Switch("exportall")
+                .setShortFlag('a')
+                .setLongFlag("exportall");
+        sw3.setHelp("Sends all products to output CSV, even if not modified");
+        jsap.registerParameter(sw3);
+
+        Switch sw4 = new Switch("webserver")
+                .setShortFlag('s')
+                .setLongFlag("web");
+        sw4.setHelp("Start web server");
+        jsap.registerParameter(sw4);
+
+        FlaggedOption opt2 = new FlaggedOption("resumetake")
+                .setStringParser(FileStringParser.getParser().setMustExist(true).setMustBeFile(true))
+                .setShortFlag('r')
+                .setLongFlag("resume");
+        opt2.setHelp("Continue stock take from specified stock.csv file (overrides -z)");
+        jsap.registerParameter(opt2);
+
+        FlaggedOption opt3 = new FlaggedOption("outputfile")
+                .setStringParser(FileStringParser.getParser().setMustExist(false).setMustBeFile(true))
+                .setShortFlag('o')
+                .setLongFlag("output");
+        opt3.setHelp("Set output file");
+        jsap.registerParameter(opt3);
+
+        FlaggedOption opt4 = new FlaggedOption("webport")
+                .setStringParser(IntegerStringParser.getParser())
+                .setShortFlag('p')
+                .setLongFlag("port");
+        opt4.setHelp("Set web server port");
+
+
+        JSAPResult config = jsap.parse(args);
+        if (!config.success()) {
+            System.err.println();
+            // print out specific error messages describing the problems
+            // with the command line, THEN print usage, THEN print full
+            // help.  This is called "beating the user with a clue stick."
+            for (java.util.Iterator errs = config.getErrorMessageIterator();
+                 errs.hasNext(); ) {
+                System.err.println("Error: " + errs.next());
+            }
+            System.err.println();
+            System.err.println("Usage: java -jar "
+                    + new File(StockTake.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getName());
+            System.err.println("                "
+                    + jsap.getUsage());
+            System.err.println();
+            System.err.println(jsap.getHelp());
+            System.exit(1);
+        }
+
+        lineEndings = config.getBoolean("winlineend") ? "\r\n" : "\n";
+
+        // Load product file
+        importProducts(config.getFile("file"), config.getBoolean("zerostock"), config.getBoolean("exportall"));
+        if(config.getFile("resumetake") != null) importExistingStockTake(config.getFile("resumetake"));
+
+
+        if (config.getBoolean("webserver")) {
+            // Start web server
+            WebServer.initiate(config.getInt("webport", 8080));
+        } else {
+            // Start graphical stock take
+            graphicalStockTake(config.getFile("outputfile", new File("stock.csv")));
         }
     }
 }
