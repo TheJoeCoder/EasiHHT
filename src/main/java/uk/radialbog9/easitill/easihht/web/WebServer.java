@@ -36,7 +36,7 @@ public class WebServer {
                 + "}";
     }
 
-    public static void initiate(int port) {
+    public static void initiate(String host, int port) {
         Javalin.create()
                 .get("/", ctx -> ctx.result("Hello World"))
                 .get("/api", ctx -> {
@@ -126,6 +126,6 @@ public class WebServer {
                     ctx.result("{\"text\":\"saved\"}");
                     System.exit(0);
                 })
-                .start(port);
+                .start(host, port);
     }
 }

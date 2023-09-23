@@ -245,11 +245,20 @@ public class StockTake {
         opt3.setHelp("Set output file");
         jsap.registerParameter(opt3);
 
-        FlaggedOption opt4 = new FlaggedOption("webport")
+        FlaggedOption opt4 = new FlaggedOption("webhost")
+                .setShortFlag('H')
+                .setLongFlag("host")
+                .setDefault("0.0.0.0");
+        opt4.setHelp("Set web server host");
+        jsap.registerParameter(opt4);
+
+        FlaggedOption opt5 = new FlaggedOption("webport")
                 .setStringParser(IntegerStringParser.getParser())
                 .setShortFlag('p')
-                .setLongFlag("port");
-        opt4.setHelp("Set web server port");
+                .setLongFlag("port")
+                .setDefault("8080");
+        opt5.setHelp("Set web server port");
+        jsap.registerParameter(opt5);
 
 
         JSAPResult config = jsap.parse(args);
@@ -283,7 +292,7 @@ public class StockTake {
 
         if (config.getBoolean("webserver")) {
             // Start web server
-            WebServer.initiate(config.getInt("webport", 8080));
+            WebServer.initiate(config.getString("webhost", "0.0.0.0"), config.getInt("webport", 8080));
         } else {
             // Start graphical stock take
             graphicalStockTake(outputFile);
