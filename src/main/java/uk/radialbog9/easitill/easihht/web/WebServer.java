@@ -97,8 +97,8 @@ public class WebServer {
                 })
                 .post("/api/item/update", ctx -> {
                     sendReqHeaders(ctx);
-                    String lc = ctx.queryParam("linecode");
-                    String st = ctx.queryParam("stock");
+                    String lc = ctx.formParam("linecode");
+                    String st = ctx.formParam("stock");
                     if (lc != null && st != null) {
                         int linecode = -1;
                         int stock = -1;
