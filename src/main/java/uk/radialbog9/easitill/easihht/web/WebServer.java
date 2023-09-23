@@ -89,11 +89,10 @@ public class WebServer {
                             }
                         }
                         json.append("]}");
-                        ctx.result("{\"results\":" + json + "}");
+                        ctx.result(json.toString());
                     } else {
                         sendBadRequest(ctx);
                     }
-                    ctx.result("{\"text\":\"search\"}");
                 })
                 .post("/api/item/update", ctx -> {
                     sendReqHeaders(ctx);
